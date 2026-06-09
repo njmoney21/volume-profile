@@ -1,5 +1,18 @@
 import { describe, it, expect } from 'vitest'
-import { filterTrades, sumPnl, winRate, avgWin, avgLoss, avgRR, prepareTradeData } from '@/lib/trades'
+import {
+  filterTrades,
+  sumPnl,
+  winRate,
+  avgWin,
+  avgLoss,
+  avgRR,
+  prepareTradeData,
+  statsByLevelType,
+  statsByScenario,
+  statsByDirection,
+  statsByTimeOfDay,
+  cumulativePnl,
+} from '@/lib/trades'
 import type { Trade } from '@/types'
 
 const makeTrade = (overrides: Partial<Trade> = {}): Trade => ({
@@ -129,6 +142,119 @@ describe('avgRR', () => {
 
   it('returns 0 when no losers', () => {
     expect(avgRR([makeTrade({ pnl: 100 })])).toBe(0)
+  })
+})
+
+describe('statsByLevelType', () => {
+  it('returns 3 rows in order POC, VAH, VAL with correct stats', () => {
+    const trades = [
+      makeTrade({ id: '1', level_type: 'POC', pnl: 200 }),
+      makeTrade({ id: '2', level_type: 'POC', pnl: -100 }),
+      makeTrade({ id: '3', level_type: 'VAH', pnl: 300 }),
+    ]
+    const result = statsByLevelType(trades)
+    expect(result).toHaveLength(3)
+    expect(result.map(r => r.label)).toEqual(['POC', 'VAH', 'VAL'])
+
+    expect(result[0]).toEqual({ label: 'POC', count: 2, winRate: 50, pnl: 100 })
+    expect(result[1]).toEqual({ label: 'VAH', count: 1, winRate: 100, pnl: 300 })
+    expect(result[2]).toEqual({ label: 'VAL', count: 0, winRate: 0, pnl: 0 })
+  })
+})
+
+describe('statsByScenario', () => {
+  it('returns 2 rows in order with correct labels', () => {
+    const trades = [
+      makeTrade({ id: '1', scenario: 'retest_continue', pnl: 200 }),
+      makeTrade({ id: '2', scenario: 'break_retest_reverse', pnl: -100 }),
+      makeTrade({ id: '3', scenario: 'break_retest_reverse', pnl: 50 }),
+    ]
+    const result = statsByScenario(trades)
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.label)).toEqual(['Retest + Continue', 'Break + Retest + Reverse'])
+
+    expect(result[0]).toEqual({ label: 'Retest + Continue', count: 1, winRate: 100, pnl: 200 })
+    expect(result[1]).toEqual({ label: 'Break + Retest + Reverse', count: 2, winRate: 50, pnl: -50 })
+  })
+})
+
+describe('statsByDirection', () => {
+  it('returns 2 rows in order with correct labels', () => {
+    const trades = [
+      makeTrade({ id: '1', direction: 'long', pnl: 200 }),
+      makeTrade({ id: '2', direction: 'long', pnl: -100 }),
+      makeTrade({ id: '3', direction: 'short', pnl: 50 }),
+    ]
+    const result = statsByDirection(trades)
+    expect(result).toHaveLength(2)
+    expect(result.map(r => r.label)).toEqual(['Long', 'Short'])
+
+    expect(result[0]).toEqual({ label: 'Long', count: 2, winRate: 50, pnl: 100 })
+    expect(result[1]).toEqual({ label: 'Short', count: 1, winRate: 100, pnl: 50 })
+  })
+})
+
+describe('statsByTimeOfDay', () => {
+  it('buckets trades into 5 fixed time buckets with fixed labels', () => {
+    const trades = [
+      makeTrade({ id: '1', time_entered: '09:30:00', pnl: 100 }),
+      makeTrade({ id: '2', time_entered: '10:29:59', pnl: -50 }),
+      makeTrade({ id: '3', time_entered: '10:30:00', pnl: 200 }),
+      makeTrade({ id: '4', time_entered: '11:45:00', pnl: 100 }),
+      makeTrade({ id: '5', time_entered: '12:30:00', pnl: -100 }),
+      makeTrade({ id: '6', time_entered: '13:29:59', pnl: 50 }),
+      makeTrade({ id: '7', time_entered: '13:30:00', pnl: 100 }),
+      makeTrade({ id: '8', time_entered: '15:00:00', pnl: -100 }),
+    ]
+    const result = statsByTimeOfDay(trades)
+    expect(result).toHaveLength(5)
+    expect(result.map(r => r.label)).toEqual([
+      '9:30–10:30',
+      '10:30–11:30',
+      '11:30–12:30',
+      '12:30–13:30',
+      '13:30+',
+    ])
+
+    // 9:30–10:30 -> trades 1, 2
+    expect(result[0].count).toBe(2)
+    // 10:30–11:30 -> trade 3 (10:30:00 falls here, lower bound inclusive)
+    expect(result[1].count).toBe(1)
+    // 11:30–12:30 -> trade 4
+    expect(result[2].count).toBe(1)
+    // 12:30–13:30 -> trades 5, 6
+    expect(result[3].count).toBe(2)
+    // 13:30+ -> trades 7, 8
+    expect(result[4].count).toBe(2)
+  })
+
+  it('handles a trade with no time_entered for any bucket gracefully (zero counts allowed)', () => {
+    const result = statsByTimeOfDay([])
+    expect(result).toHaveLength(5)
+    result.forEach(row => {
+      expect(row).toMatchObject({ count: 0, winRate: 0, pnl: 0 })
+    })
+  })
+})
+
+describe('cumulativePnl', () => {
+  it('returns points sorted by date ascending with running cumulative sum', () => {
+    const trades = [
+      makeTrade({ id: '1', date: '2026-06-09', pnl: 100 }),
+      makeTrade({ id: '2', date: '2026-06-07', pnl: 50 }),
+      makeTrade({ id: '3', date: '2026-06-08', pnl: -30 }),
+      makeTrade({ id: '4', date: '2026-06-08', pnl: 20 }),
+    ]
+    const result = cumulativePnl(trades)
+    expect(result).toEqual([
+      { date: '2026-06-07', cumulative: 50 },
+      { date: '2026-06-08', cumulative: 40 },
+      { date: '2026-06-09', cumulative: 140 },
+    ])
+  })
+
+  it('returns empty array for no trades', () => {
+    expect(cumulativePnl([])).toEqual([])
   })
 })
 

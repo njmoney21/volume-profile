@@ -82,6 +82,18 @@ export interface BacktestTrade {
   notes: string | null
 }
 
+export interface BreakdownRow {
+  label: string
+  count: number
+  winRate: number
+  pnl: number
+}
+
+export interface PnlPoint {
+  date: string
+  cumulative: number
+}
+
 export interface Concept {
   id: string
   title: string
