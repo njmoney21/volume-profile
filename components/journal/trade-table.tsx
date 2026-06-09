@@ -22,7 +22,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
   if (trades.length === 0) {
     return (
       <div className="text-center py-16 text-gray-500 text-sm">
-        No trades yet. Click "+ Add Trade" to log your first trade.
+        No trades yet. Click &quot;+ Add Trade&quot; to log your first trade.
       </div>
     )
   }
