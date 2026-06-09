@@ -74,7 +74,7 @@ A web application for journaling and backtesting a trading strategy based on the
 | prev_day_vah | decimal | previous day VAH |
 | prev_day_val | decimal | previous day VAL |
 | scenario | enum | retest_continue / break_retest_reverse |
-| pnl | decimal | calculated: (exit - entry) * contracts * tick_value |
+| pnl | decimal | calculated: (exit_price - entry_price) * contracts * 20 (NQ: 1 point = $20, 1 tick = 0.25 pts = $5) |
 | notes | text | optional |
 | source | enum | auto / manual |
 | created_at | timestamp | |
@@ -167,9 +167,31 @@ A web application for journaling and backtesting a trading strategy based on the
 - Charts grid below: P&L over time | win rate by level | performance by time of day | long vs short
 - Toggle bar: Real / Backtest / Combined
 
+### Concepts Page
+- List of concept cards (title + preview of content)
+- "New Concept" button → opens editor
+- Each concept has: title, category tag (e.g. "Entry", "Risk", "Volume Profile", "Market Structure"), and body (rich text / markdown)
+- Full-text search across all concepts
+- Edit/delete any concept
+- No structure enforced — free-form, easily updatable as you learn
+
 ---
 
-## 6. Error Handling
+## 6. Data Model (continued)
+
+### `concepts` — research notes and trading concepts
+| Column | Type | Notes |
+|--------|------|-------|
+| id | uuid | primary key |
+| title | text | concept name |
+| category | text | user-defined tag (e.g. "Entry", "Risk Management") |
+| body | text | markdown content |
+| created_at | timestamp | |
+| updated_at | timestamp | |
+
+---
+
+## 7. Error Handling
 
 - Tradovate import failures show a clear error with retry option; already-imported trades are skipped (deduplication by trade ID)
 - Manual trade entries validate that time >= 09:30
@@ -185,7 +207,7 @@ A web application for journaling and backtesting a trading strategy based on the
 | Frontend | Next.js 14 (App Router), React, Tailwind CSS |
 | Backend | Next.js API Routes (server actions) |
 | Database | Supabase (PostgreSQL) |
-| Auth | Supabase Auth |
+| Auth | Supabase Auth (single-user — email/password login, one account) |
 | Charts | Recharts |
 | Deployment | Vercel |
 | Tradovate | Tradovate REST API (OAuth 2.0) |
