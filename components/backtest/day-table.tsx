@@ -5,6 +5,7 @@ import type { BacktestDay, BacktestTrade } from '@/types'
 import { formatDate, formatPnl } from '@/lib/utils'
 import { deleteDay } from '@/app/backtest/actions'
 import { DayForm } from './day-form'
+import { DayTrades } from './day-trades'
 
 interface DayTableProps {
   sessionId: string
@@ -81,8 +82,7 @@ export function DayTable({ sessionId, days, trades }: DayTableProps) {
                     {isExpanded && (
                       <tr className="border-b border-white/5">
                         <td colSpan={7} className="p-0">
-                          {/* TODO: replace with <DayTrades .../> in Task 6 */}
-                          <div className="text-sm text-gray-500 p-3">Trades for this day — coming in Task 6</div>
+                          <DayTrades sessionId={sessionId} day={day} trades={trades.filter(t => t.day_id === day.id)} />
                         </td>
                       </tr>
                     )}
