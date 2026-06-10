@@ -2,7 +2,7 @@
 
 import type { Trade } from '@/types'
 import {
-  sumPnl, winRate, avgWin, avgLoss, avgRR,
+  sumPnl, resultWinRate, resultAvgWin, resultAvgLoss, resultAvgRR,
   statsByLevelType, statsByScenario, statsByDirection, statsByTimeOfDay, cumulativePnl,
 } from '@/lib/trades'
 import { StatCards } from './stat-cards'
@@ -19,11 +19,11 @@ export function DashboardClient({ trades }: { trades: Trade[] }) {
 
       <StatCards
         totalTrades={trades.length}
-        winRate={winRate(trades)}
+        winRate={resultWinRate(trades)}
         totalPnl={sumPnl(trades)}
-        avgWin={avgWin(trades)}
-        avgLoss={avgLoss(trades)}
-        avgRR={avgRR(trades)}
+        avgWin={resultAvgWin(trades)}
+        avgLoss={resultAvgLoss(trades)}
+        avgRR={resultAvgRR(trades)}
       />
 
       <PnlChart data={cumulativePnl(trades)} />
