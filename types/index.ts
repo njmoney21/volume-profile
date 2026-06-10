@@ -2,21 +2,21 @@ export type Direction = 'long' | 'short'
 export type LevelType = 'POC' | 'VAH' | 'VAL'
 export type Scenario = 'retest_continue' | 'break_retest_reverse'
 export type TradeSource = 'auto' | 'manual'
+export type TradeResult = 'win' | 'loss' | 'breakeven'
 
 export interface Trade {
   id: string
   date: string           // "2026-06-09"
   time_entered: string   // "HH:MM:SS"
   direction: Direction
-  entry_price: number
-  exit_price: number
-  contracts: number
+  position_size: number
   level_type: LevelType
   level_price: number
   prev_day_poc: number
   prev_day_vah: number
   prev_day_val: number
   scenario: Scenario
+  result: TradeResult
   pnl: number
   notes: string | null
   source: TradeSource
@@ -27,24 +27,24 @@ export interface TradeFormData {
   date: string
   time_entered: string
   direction: Direction
-  entry_price: number
-  exit_price: number
-  contracts: number
+  position_size: number
   level_type: LevelType
   level_price: number
   prev_day_poc: number
   prev_day_vah: number
   prev_day_val: number
   scenario: Scenario
+  result: TradeResult
+  pnl: number
   notes?: string
 }
 
 export interface TradeFilters {
-  date_from?: string
-  date_to?: string
+  date?: string
   direction?: Direction
   level_type?: LevelType
   scenario?: Scenario
+  result?: TradeResult
 }
 
 export interface BacktestSession {
