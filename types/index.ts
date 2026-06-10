@@ -94,6 +94,31 @@ export interface PnlPoint {
   cumulative: number
 }
 
+export interface BacktestSessionFormData {
+  date_from: string
+  date_to: string
+  notes?: string
+}
+
+export interface BacktestDayFormData {
+  date: string
+  prev_day_poc: number
+  prev_day_vah: number
+  prev_day_val: number
+}
+
+export interface BacktestTradeFormData {
+  time_entered: string
+  direction: Direction
+  entry_price: number
+  exit_price: number
+  contracts: number
+  level_type: LevelType
+  level_price: number
+  scenario: Scenario
+  notes?: string
+}
+
 export interface Concept {
   id: string
   title: string

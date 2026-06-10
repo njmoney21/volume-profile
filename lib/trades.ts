@@ -12,28 +12,28 @@ export function filterTrades(trades: Trade[], filters: TradeFilters): Trade[] {
   })
 }
 
-export function sumPnl(trades: Trade[]): number {
+export function sumPnl(trades: { pnl: number }[]): number {
   return Math.round(trades.reduce((sum, t) => sum + t.pnl, 0) * 100) / 100
 }
 
-export function winRate(trades: Trade[]): number {
+export function winRate(trades: { pnl: number }[]): number {
   if (trades.length === 0) return 0
   return Math.round((trades.filter(t => t.pnl > 0).length / trades.length) * 100)
 }
 
-export function avgWin(trades: Trade[]): number {
+export function avgWin(trades: { pnl: number }[]): number {
   const winners = trades.filter(t => t.pnl > 0)
   if (winners.length === 0) return 0
   return Math.round((winners.reduce((s, t) => s + t.pnl, 0) / winners.length) * 100) / 100
 }
 
-export function avgLoss(trades: Trade[]): number {
+export function avgLoss(trades: { pnl: number }[]): number {
   const losers = trades.filter(t => t.pnl < 0)
   if (losers.length === 0) return 0
   return Math.round((losers.reduce((s, t) => s + t.pnl, 0) / losers.length) * 100) / 100
 }
 
-export function avgRR(trades: Trade[]): number {
+export function avgRR(trades: { pnl: number }[]): number {
   const win = Math.abs(avgWin(trades))
   const loss = Math.abs(avgLoss(trades))
   if (loss === 0) return 0
