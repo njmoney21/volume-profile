@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import type { Trade, TradeFilters } from '@/types'
-import { filterTrades, sumPnl, winRate } from '@/lib/trades'
+import { filterTrades, sumPnl, resultWinRate } from '@/lib/trades'
 import { formatPnl } from '@/lib/utils'
 import { FiltersBar } from './filters-bar'
 import { TradeTable } from './trade-table'
@@ -14,7 +14,7 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
 
   const filtered = filterTrades(initialTrades, filters)
   const totalPnl = sumPnl(filtered)
-  const wr = winRate(filtered)
+  const wr = resultWinRate(filtered)
 
   return (
     <div>
