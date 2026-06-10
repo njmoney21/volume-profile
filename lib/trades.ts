@@ -1,13 +1,12 @@
 import type { Trade, TradeFilters, TradeFormData, BreakdownRow, PnlPoint } from '@/types'
-import { calculatePnl } from './utils'
 
 export function filterTrades(trades: Trade[], filters: TradeFilters): Trade[] {
   return trades.filter(trade => {
     if (filters.direction && trade.direction !== filters.direction) return false
     if (filters.level_type && trade.level_type !== filters.level_type) return false
     if (filters.scenario && trade.scenario !== filters.scenario) return false
-    if (filters.date_from && trade.date < filters.date_from) return false
-    if (filters.date_to && trade.date > filters.date_to) return false
+    if (filters.result && trade.result !== filters.result) return false
+    if (filters.date && trade.date !== filters.date) return false
     return true
   })
 }
@@ -40,11 +39,36 @@ export function avgRR(trades: { pnl: number }[]): number {
   return Math.round((win / loss) * 100) / 100
 }
 
+export function resultWinRate(trades: Trade[]): number {
+  if (trades.length === 0) return 0
+  const wins = trades.filter(t => t.result === 'win').length
+  return Math.round((wins / trades.length) * 100)
+}
+
+export function resultAvgWin(trades: Trade[]): number {
+  const winners = trades.filter(t => t.result === 'win')
+  if (winners.length === 0) return 0
+  return Math.round((winners.reduce((s, t) => s + t.pnl, 0) / winners.length) * 100) / 100
+}
+
+export function resultAvgLoss(trades: Trade[]): number {
+  const losers = trades.filter(t => t.result === 'loss')
+  if (losers.length === 0) return 0
+  return Math.round((losers.reduce((s, t) => s + t.pnl, 0) / losers.length) * 100) / 100
+}
+
+export function resultAvgRR(trades: Trade[]): number {
+  const win = Math.abs(resultAvgWin(trades))
+  const loss = Math.abs(resultAvgLoss(trades))
+  if (loss === 0) return 0
+  return Math.round((win / loss) * 100) / 100
+}
+
 function rowFor(label: string, trades: Trade[]): BreakdownRow {
   return {
     label,
     count: trades.length,
-    winRate: winRate(trades),
+    winRate: resultWinRate(trades),
     pnl: sumPnl(trades),
   }
 }
@@ -107,16 +131,15 @@ export function prepareTradeData(formData: TradeFormData): Omit<Trade, 'id' | 'c
     date: formData.date,
     time_entered: formData.time_entered,
     direction: formData.direction,
-    entry_price: formData.entry_price,
-    exit_price: formData.exit_price,
-    contracts: formData.contracts,
+    position_size: formData.position_size,
     level_type: formData.level_type,
     level_price: formData.level_price,
     prev_day_poc: formData.prev_day_poc,
     prev_day_vah: formData.prev_day_vah,
     prev_day_val: formData.prev_day_val,
     scenario: formData.scenario,
-    pnl: calculatePnl(formData.direction, formData.entry_price, formData.exit_price, formData.contracts),
+    result: formData.result,
+    pnl: formData.pnl,
     notes: formData.notes ?? null,
     source: 'manual',
   }

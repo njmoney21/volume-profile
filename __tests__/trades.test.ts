@@ -6,6 +6,10 @@ import {
   avgWin,
   avgLoss,
   avgRR,
+  resultWinRate,
+  resultAvgWin,
+  resultAvgLoss,
+  resultAvgRR,
   prepareTradeData,
   statsByLevelType,
   statsByScenario,
@@ -20,15 +24,14 @@ const makeTrade = (overrides: Partial<Trade> = {}): Trade => ({
   date: '2026-06-09',
   time_entered: '10:00:00',
   direction: 'long',
-  entry_price: 21000,
-  exit_price: 21010,
-  contracts: 1,
+  position_size: 1000,
   level_type: 'POC',
   level_price: 21000,
   prev_day_poc: 21000,
   prev_day_vah: 21050,
   prev_day_val: 20950,
   scenario: 'retest_continue',
+  result: 'win',
   pnl: 200,
   notes: null,
   source: 'manual',
@@ -38,9 +41,9 @@ const makeTrade = (overrides: Partial<Trade> = {}): Trade => ({
 
 describe('filterTrades', () => {
   const trades = [
-    makeTrade({ id: '1', date: '2026-06-09', direction: 'long', level_type: 'POC', scenario: 'retest_continue' }),
-    makeTrade({ id: '2', date: '2026-06-08', direction: 'short', level_type: 'VAH', scenario: 'break_retest_reverse' }),
-    makeTrade({ id: '3', date: '2026-06-07', direction: 'long', level_type: 'VAL', scenario: 'retest_continue' }),
+    makeTrade({ id: '1', date: '2026-06-09', direction: 'long', level_type: 'POC', scenario: 'retest_continue', result: 'win' }),
+    makeTrade({ id: '2', date: '2026-06-08', direction: 'short', level_type: 'VAH', scenario: 'break_retest_reverse', result: 'loss' }),
+    makeTrade({ id: '3', date: '2026-06-07', direction: 'long', level_type: 'VAL', scenario: 'retest_continue', result: 'breakeven' }),
   ]
 
   it('returns all trades when no filters applied', () => {
@@ -64,14 +67,16 @@ describe('filterTrades', () => {
     expect(result).toHaveLength(2)
   })
 
-  it('filters by date_from (inclusive)', () => {
-    const result = filterTrades(trades, { date_from: '2026-06-08' })
-    expect(result).toHaveLength(2)
+  it('filters by date (exact match)', () => {
+    const result = filterTrades(trades, { date: '2026-06-08' })
+    expect(result).toHaveLength(1)
+    expect(result[0].id).toBe('2')
   })
 
-  it('filters by date_to (inclusive)', () => {
-    const result = filterTrades(trades, { date_to: '2026-06-08' })
-    expect(result).toHaveLength(2)
+  it('filters by result', () => {
+    const result = filterTrades(trades, { result: 'loss' })
+    expect(result).toHaveLength(1)
+    expect(result[0].result).toBe('loss')
   })
 
   it('combines multiple filters', () => {
@@ -145,12 +150,81 @@ describe('avgRR', () => {
   })
 })
 
+describe('resultWinRate', () => {
+  it('calculates W / (W + L + BE): 2 wins of 4 = 50%', () => {
+    const trades = [
+      makeTrade({ result: 'win' }),
+      makeTrade({ result: 'win' }),
+      makeTrade({ result: 'loss' }),
+      makeTrade({ result: 'breakeven' }),
+    ]
+    expect(resultWinRate(trades)).toBe(50)
+  })
+
+  it('returns 0 for empty array', () => {
+    expect(resultWinRate([])).toBe(0)
+  })
+
+  it('returns 100 when all trades are wins', () => {
+    expect(resultWinRate([makeTrade({ result: 'win' }), makeTrade({ result: 'win' })])).toBe(100)
+  })
+
+  it('counts breakeven trades in the denominator but not as wins', () => {
+    const trades = [makeTrade({ result: 'win' }), makeTrade({ result: 'breakeven' })]
+    expect(resultWinRate(trades)).toBe(50)
+  })
+})
+
+describe('resultAvgWin', () => {
+  it('averages pnl of trades tagged as win', () => {
+    const trades = [
+      makeTrade({ result: 'win', pnl: 300 }),
+      makeTrade({ result: 'win', pnl: 100 }),
+      makeTrade({ result: 'loss', pnl: -200 }),
+    ]
+    expect(resultAvgWin(trades)).toBe(200)
+  })
+
+  it('returns 0 when no trades tagged as win', () => {
+    expect(resultAvgWin([makeTrade({ result: 'loss', pnl: -100 })])).toBe(0)
+  })
+})
+
+describe('resultAvgLoss', () => {
+  it('averages pnl of trades tagged as loss', () => {
+    const trades = [
+      makeTrade({ result: 'win', pnl: 300 }),
+      makeTrade({ result: 'loss', pnl: -100 }),
+      makeTrade({ result: 'loss', pnl: -200 }),
+    ]
+    expect(resultAvgLoss(trades)).toBe(-150)
+  })
+
+  it('returns 0 when no trades tagged as loss', () => {
+    expect(resultAvgLoss([makeTrade({ result: 'win', pnl: 100 })])).toBe(0)
+  })
+})
+
+describe('resultAvgRR', () => {
+  it('calculates risk/reward ratio from result-tagged trades', () => {
+    const trades = [
+      makeTrade({ result: 'win', pnl: 300 }),
+      makeTrade({ result: 'loss', pnl: -100 }),
+    ]
+    expect(resultAvgRR(trades)).toBe(3)
+  })
+
+  it('returns 0 when no trades tagged as loss', () => {
+    expect(resultAvgRR([makeTrade({ result: 'win', pnl: 100 })])).toBe(0)
+  })
+})
+
 describe('statsByLevelType', () => {
   it('returns 3 rows in order POC, VAH, VAL with correct stats', () => {
     const trades = [
-      makeTrade({ id: '1', level_type: 'POC', pnl: 200 }),
-      makeTrade({ id: '2', level_type: 'POC', pnl: -100 }),
-      makeTrade({ id: '3', level_type: 'VAH', pnl: 300 }),
+      makeTrade({ id: '1', level_type: 'POC', result: 'win', pnl: 200 }),
+      makeTrade({ id: '2', level_type: 'POC', result: 'loss', pnl: -100 }),
+      makeTrade({ id: '3', level_type: 'VAH', result: 'win', pnl: 300 }),
     ]
     const result = statsByLevelType(trades)
     expect(result).toHaveLength(3)
@@ -165,9 +239,9 @@ describe('statsByLevelType', () => {
 describe('statsByScenario', () => {
   it('returns 2 rows in order with correct labels', () => {
     const trades = [
-      makeTrade({ id: '1', scenario: 'retest_continue', pnl: 200 }),
-      makeTrade({ id: '2', scenario: 'break_retest_reverse', pnl: -100 }),
-      makeTrade({ id: '3', scenario: 'break_retest_reverse', pnl: 50 }),
+      makeTrade({ id: '1', scenario: 'retest_continue', result: 'win', pnl: 200 }),
+      makeTrade({ id: '2', scenario: 'break_retest_reverse', result: 'loss', pnl: -100 }),
+      makeTrade({ id: '3', scenario: 'break_retest_reverse', result: 'win', pnl: 50 }),
     ]
     const result = statsByScenario(trades)
     expect(result).toHaveLength(2)
@@ -181,9 +255,9 @@ describe('statsByScenario', () => {
 describe('statsByDirection', () => {
   it('returns 2 rows in order with correct labels', () => {
     const trades = [
-      makeTrade({ id: '1', direction: 'long', pnl: 200 }),
-      makeTrade({ id: '2', direction: 'long', pnl: -100 }),
-      makeTrade({ id: '3', direction: 'short', pnl: 50 }),
+      makeTrade({ id: '1', direction: 'long', result: 'win', pnl: 200 }),
+      makeTrade({ id: '2', direction: 'long', result: 'loss', pnl: -100 }),
+      makeTrade({ id: '3', direction: 'short', result: 'win', pnl: 50 }),
     ]
     const result = statsByDirection(trades)
     expect(result).toHaveLength(2)
@@ -259,22 +333,24 @@ describe('cumulativePnl', () => {
 })
 
 describe('prepareTradeData', () => {
-  it('calculates pnl and sets source to manual', () => {
+  it('passes through manual pnl, position_size, and result; sets source to manual', () => {
     const result = prepareTradeData({
       date: '2026-06-09',
       time_entered: '10:00',
       direction: 'long',
-      entry_price: 21000,
-      exit_price: 21010,
-      contracts: 1,
+      position_size: 1500,
       level_type: 'POC',
       level_price: 21000,
       prev_day_poc: 21000,
       prev_day_vah: 21050,
       prev_day_val: 20950,
       scenario: 'retest_continue',
+      result: 'win',
+      pnl: 200,
     })
     expect(result.pnl).toBe(200)
+    expect(result.position_size).toBe(1500)
+    expect(result.result).toBe('win')
     expect(result.source).toBe('manual')
     expect(result.notes).toBeNull()
   })
