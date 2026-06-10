@@ -11,6 +11,24 @@ const scenarioLabel: Record<string, string> = {
   break_retest_reverse: 'Break + Reverse',
 }
 
+const resultLabel: Record<string, string> = {
+  win: 'W',
+  loss: 'L',
+  breakeven: 'BE',
+}
+
+const resultBadgeClass: Record<string, string> = {
+  win: 'bg-green-600/20 text-green-400',
+  loss: 'bg-red-600/20 text-red-400',
+  breakeven: 'border border-white/20 text-gray-300',
+}
+
+const resultPnlClass: Record<string, string> = {
+  win: 'text-green-600',
+  loss: 'text-red-600',
+  breakeven: 'text-gray-400',
+}
+
 export function TradeTable({ trades }: { trades: Trade[] }) {
   const [editing, setEditing] = useState<Trade | null>(null)
 
@@ -33,7 +51,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/10 text-gray-400 text-left">
-              {['Date', 'Time', 'Direction', 'Level', 'Scenario', 'Entry', 'Exit', 'Qty', 'P&L', ''].map(h => (
+              {['Date', 'Time', 'Direction', 'Result', 'Level', 'Scenario', 'Size', 'P&L', ''].map(h => (
                 <th key={h} className="pb-3 pr-4 font-medium">{h}</th>
               ))}
             </tr>
@@ -54,6 +72,11 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                   </span>
                 </td>
                 <td className="py-3 pr-4">
+                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${resultBadgeClass[trade.result]}`}>
+                    {resultLabel[trade.result]}
+                  </span>
+                </td>
+                <td className="py-3 pr-4">
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                     trade.level_type === 'POC'
                       ? 'bg-white text-black'
@@ -63,12 +86,8 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                   </span>
                 </td>
                 <td className="py-3 pr-4 text-gray-400 text-xs">{scenarioLabel[trade.scenario]}</td>
-                <td className="py-3 pr-4 font-mono">{trade.entry_price}</td>
-                <td className="py-3 pr-4 font-mono">{trade.exit_price}</td>
-                <td className="py-3 pr-4 text-gray-400">{trade.contracts}</td>
-                <td className={`py-3 pr-4 font-mono font-medium ${
-                  trade.pnl > 0 ? 'text-green-600' : trade.pnl < 0 ? 'text-red-600' : 'text-gray-400'
-                }`}>
+                <td className="py-3 pr-4 font-mono text-gray-400">${trade.position_size.toFixed(2)}</td>
+                <td className={`py-3 pr-4 font-mono font-medium ${resultPnlClass[trade.result]}`}>
                   {formatPnl(trade.pnl)}
                 </td>
                 <td className="py-3">
