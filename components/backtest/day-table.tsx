@@ -82,7 +82,7 @@ export function DayTable({ sessionId, days, trades }: DayTableProps) {
                     {isExpanded && (
                       <tr className="border-b border-white/5">
                         <td colSpan={7} className="p-0">
-                          <DayTrades sessionId={sessionId} day={day} trades={trades.filter(t => t.day_id === day.id)} />
+                          <DayTrades sessionId={sessionId} day={day} trades={dayTrades} />
                         </td>
                       </tr>
                     )}
