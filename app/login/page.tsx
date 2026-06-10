@@ -7,8 +7,8 @@ export default function LoginPage() {
   const [state, formAction, pending] = useActionState(login, null)
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-950">
-      <div className="w-full max-w-sm bg-gray-900 border border-gray-800 rounded-xl p-8">
+    <div className="min-h-screen flex items-center justify-center bg-black">
+      <div className="w-full max-w-sm bg-black border border-white/10 rounded-xl p-8">
         <h1 className="text-xl font-semibold text-white mb-6">Volume Profile</h1>
         <form action={formAction} className="flex flex-col gap-4">
           <div className="flex flex-col gap-1.5">
@@ -18,7 +18,7 @@ export default function LoginPage() {
               name="email"
               type="email"
               required
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-black border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
             />
           </div>
           <div className="flex flex-col gap-1.5">
@@ -28,16 +28,16 @@ export default function LoginPage() {
               name="password"
               type="password"
               required
-              className="bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="bg-black border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30"
             />
           </div>
           {state?.error && (
-            <p className="text-red-400 text-sm">{state.error}</p>
+            <p className="text-red-500 text-sm">{state.error}</p>
           )}
           <button
             type="submit"
             disabled={pending}
-            className="mt-2 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-2 text-sm font-medium transition-colors disabled:opacity-50"
+            className="mt-2 bg-white hover:bg-gray-200 text-black rounded-lg py-2 text-sm font-medium transition-colors disabled:opacity-50"
           >
             {pending ? 'Signing in...' : 'Sign in'}
           </button>

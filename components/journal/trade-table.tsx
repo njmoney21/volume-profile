@@ -32,7 +32,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
       <div className="overflow-x-auto">
         <table className="w-full text-sm">
           <thead>
-            <tr className="border-b border-gray-800 text-gray-400 text-left">
+            <tr className="border-b border-white/10 text-gray-400 text-left">
               {['Date', 'Time', 'Direction', 'Level', 'Scenario', 'Entry', 'Exit', 'Qty', 'P&L', ''].map(h => (
                 <th key={h} className="pb-3 pr-4 font-medium">{h}</th>
               ))}
@@ -41,14 +41,14 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
           <tbody>
             {trades.map(trade => (
               <tr key={trade.id}
-                className="border-b border-gray-800/50 hover:bg-gray-800/30 transition-colors">
+                className="border-b border-white/5 hover:bg-white/5 transition-colors">
                 <td className="py-3 pr-4">{formatDate(trade.date)}</td>
                 <td className="py-3 pr-4 text-gray-400">{formatTime(trade.time_entered)}</td>
                 <td className="py-3 pr-4">
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                     trade.direction === 'long'
-                      ? 'bg-green-900/50 text-green-400'
-                      : 'bg-red-900/50 text-red-400'
+                      ? 'bg-white text-black'
+                      : 'border border-white/20 text-gray-300'
                   }`}>
                     {trade.direction.toUpperCase()}
                   </span>
@@ -56,8 +56,8 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                 <td className="py-3 pr-4">
                   <span className={`px-2 py-0.5 rounded text-xs font-medium ${
                     trade.level_type === 'POC'
-                      ? 'bg-red-900/40 text-red-300'
-                      : 'bg-purple-900/40 text-purple-300'
+                      ? 'bg-white text-black'
+                      : 'border border-white/20 text-gray-300'
                   }`}>
                     {trade.level_type}
                   </span>
@@ -67,7 +67,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                 <td className="py-3 pr-4 font-mono">{trade.exit_price}</td>
                 <td className="py-3 pr-4 text-gray-400">{trade.contracts}</td>
                 <td className={`py-3 pr-4 font-mono font-medium ${
-                  trade.pnl > 0 ? 'text-green-400' : trade.pnl < 0 ? 'text-red-400' : 'text-gray-400'
+                  trade.pnl > 0 ? 'text-green-600' : trade.pnl < 0 ? 'text-red-600' : 'text-gray-400'
                 }`}>
                   {formatPnl(trade.pnl)}
                 </td>
@@ -76,7 +76,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                     <button onClick={() => setEditing(trade)}
                       className="text-xs text-gray-400 hover:text-white transition-colors">Edit</button>
                     <button onClick={() => handleDelete(trade.id)}
-                      className="text-xs text-gray-400 hover:text-red-400 transition-colors">Delete</button>
+                      className="text-xs text-gray-400 hover:text-white transition-colors">Delete</button>
                   </div>
                 </td>
               </tr>

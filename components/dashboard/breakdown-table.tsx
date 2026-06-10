@@ -3,7 +3,7 @@ import { formatPnl } from '@/lib/utils'
 
 export function BreakdownTable({ title, rows }: { title: string; rows: BreakdownRow[] }) {
   return (
-    <div className="bg-gray-900 border border-gray-800 rounded-xl p-4">
+    <div className="bg-black border border-white/10 rounded-xl p-4">
       <h2 className="text-sm font-medium text-gray-300 mb-3">{title}</h2>
       <table className="w-full text-sm">
         <thead>
@@ -16,12 +16,12 @@ export function BreakdownTable({ title, rows }: { title: string; rows: Breakdown
         </thead>
         <tbody>
           {rows.map(row => (
-            <tr key={row.label} className="border-t border-gray-800/50">
+            <tr key={row.label} className="border-t border-white/5">
               <td className="py-2 text-gray-300">{row.label}</td>
               <td className="py-2 text-right text-gray-400">{row.count}</td>
               <td className="py-2 text-right text-gray-400">{row.count > 0 ? `${row.winRate}%` : '—'}</td>
               <td className={`py-2 text-right font-mono ${
-                row.pnl > 0 ? 'text-green-400' : row.pnl < 0 ? 'text-red-400' : 'text-gray-400'
+                row.pnl > 0 ? 'text-green-600' : row.pnl < 0 ? 'text-red-600' : 'text-gray-400'
               }`}>
                 {row.count > 0 ? formatPnl(row.pnl) : '—'}
               </td>

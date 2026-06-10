@@ -3,7 +3,7 @@
 import type { TradeFilters } from '@/types'
 
 const selectClass =
-  'bg-gray-800 border border-gray-700 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-blue-500'
+  'bg-black border border-white/20 rounded-lg px-3 py-1.5 text-sm text-white focus:outline-none focus:ring-2 focus:ring-white/30'
 
 interface FiltersBarProps {
   filters: TradeFilters

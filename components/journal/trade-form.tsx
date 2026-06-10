@@ -5,7 +5,7 @@ import { createTrade, updateTrade } from '@/app/journal/actions'
 import type { Trade, TradeFormData, Direction, LevelType, Scenario } from '@/types'
 
 const inputClass =
-  'bg-gray-800 border border-gray-700 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 w-full'
+  'bg-black border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30 w-full'
 
 function Field({ label, children }: { label: string; children: React.ReactNode }) {
   return (
@@ -92,7 +92,7 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
 
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
-      <div className="bg-gray-900 border border-gray-800 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
+      <div className="bg-black border border-white/10 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
         <h2 className="text-lg font-semibold mb-5">{trade ? 'Edit Trade' : 'Add Trade'}</h2>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
@@ -138,7 +138,7 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
             </Field>
           </div>
 
-          <div className="border-t border-gray-800 pt-4">
+          <div className="border-t border-white/10 pt-4">
             <p className="text-xs text-gray-500 mb-3">Previous Day Levels</p>
             <div className="grid grid-cols-3 gap-3">
               <Field label="POC (Red)">
@@ -190,7 +190,7 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
               className={`${inputClass} h-20 resize-none`} />
           </Field>
 
-          {error && <p className="text-red-400 text-sm">{error}</p>}
+          {error && <p className="text-red-500 text-sm">{error}</p>}
 
           <div className="flex gap-3 justify-end pt-2">
             <button type="button" onClick={onClose}
@@ -198,7 +198,7 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
               Cancel
             </button>
             <button type="submit" disabled={loading}
-              className="px-4 py-2 text-sm bg-blue-600 hover:bg-blue-500 text-white rounded-lg transition-colors disabled:opacity-50">
+              className="px-4 py-2 text-sm bg-white hover:bg-gray-200 text-black rounded-lg transition-colors disabled:opacity-50">
               {loading ? 'Saving...' : trade ? 'Save Changes' : 'Add Trade'}
             </button>
           </div>
