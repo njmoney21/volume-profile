@@ -19,10 +19,8 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
 
   return (
     <div className="flex flex-wrap gap-3 items-center">
-      <input type="date" value={filters.date_from ?? ''} title="From date"
-        onChange={e => set('date_from', e.target.value)} className={selectClass} />
-      <input type="date" value={filters.date_to ?? ''} title="To date"
-        onChange={e => set('date_to', e.target.value)} className={selectClass} />
+      <input type="date" value={filters.date ?? ''} title="Date"
+        onChange={e => set('date', e.target.value)} className={selectClass} />
       <select value={filters.direction ?? ''}
         onChange={e => set('direction', e.target.value)} className={selectClass}>
         <option value="">All Directions</option>
@@ -41,6 +39,13 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
         <option value="">All Scenarios</option>
         <option value="retest_continue">Retest + Continue</option>
         <option value="break_retest_reverse">Break + Retest + Reverse</option>
+      </select>
+      <select value={filters.result ?? ''}
+        onChange={e => set('result', e.target.value)} className={selectClass}>
+        <option value="">All Results</option>
+        <option value="win">Win</option>
+        <option value="loss">Loss</option>
+        <option value="breakeven">Breakeven</option>
       </select>
       {hasFilters && (
         <button onClick={() => onChange({})}
