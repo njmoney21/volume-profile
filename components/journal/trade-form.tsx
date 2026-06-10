@@ -2,7 +2,7 @@
 
 import { useState } from 'react'
 import { createTrade, updateTrade } from '@/app/journal/actions'
-import type { Trade, TradeFormData, Direction, LevelType, Scenario } from '@/types'
+import type { Trade, TradeFormData, Direction, LevelType, Scenario, TradeResult } from '@/types'
 
 const inputClass =
   'bg-black border border-white/20 rounded-lg px-3 py-2 text-white text-sm focus:outline-none focus:ring-2 focus:ring-white/30 w-full'
@@ -20,15 +20,15 @@ const defaultForm: TradeFormData = {
   date: new Date().toISOString().split('T')[0],
   time_entered: '09:30',
   direction: 'long',
-  entry_price: 0,
-  exit_price: 0,
-  contracts: 1,
+  position_size: 0,
   level_type: 'POC',
   level_price: 0,
   prev_day_poc: 0,
   prev_day_vah: 0,
   prev_day_val: 0,
   scenario: 'retest_continue',
+  result: 'breakeven',
+  pnl: 0,
   notes: '',
 }
 
@@ -44,15 +44,15 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
           date: trade.date,
           time_entered: trade.time_entered.slice(0, 5),
           direction: trade.direction,
-          entry_price: trade.entry_price,
-          exit_price: trade.exit_price,
-          contracts: trade.contracts,
+          position_size: trade.position_size,
           level_type: trade.level_type,
           level_price: trade.level_price,
           prev_day_poc: trade.prev_day_poc,
           prev_day_vah: trade.prev_day_vah,
           prev_day_val: trade.prev_day_val,
           scenario: trade.scenario,
+          result: trade.result,
+          pnl: trade.pnl,
           notes: trade.notes ?? '',
         }
       : defaultForm
@@ -71,9 +71,8 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
 
     const data: TradeFormData = {
       ...form,
-      entry_price: Number(form.entry_price),
-      exit_price: Number(form.exit_price),
-      contracts: Number(form.contracts),
+      position_size: Number(form.position_size),
+      pnl: Number(form.pnl),
       level_price: Number(form.level_price),
       prev_day_poc: Number(form.prev_day_poc),
       prev_day_vah: Number(form.prev_day_vah),
@@ -118,22 +117,26 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
                 <option value="short">Short</option>
               </select>
             </Field>
-            <Field label="Contracts">
-              <input type="number" min="1" value={form.contracts}
-                onChange={e => set('contracts', e.target.value)}
-                className={inputClass} required />
+            <Field label="Result">
+              <select value={form.result}
+                onChange={e => set('result', e.target.value as TradeResult)}
+                className={inputClass}>
+                <option value="win">Win</option>
+                <option value="loss">Loss</option>
+                <option value="breakeven">Breakeven</option>
+              </select>
             </Field>
           </div>
 
           <div className="grid grid-cols-2 gap-4">
-            <Field label="Entry Price">
-              <input type="number" step="0.25" value={form.entry_price}
-                onChange={e => set('entry_price', e.target.value)}
+            <Field label="Position Size ($)">
+              <input type="number" step="0.01" value={form.position_size}
+                onChange={e => set('position_size', e.target.value)}
                 className={inputClass} required />
             </Field>
-            <Field label="Exit Price">
-              <input type="number" step="0.25" value={form.exit_price}
-                onChange={e => set('exit_price', e.target.value)}
+            <Field label="P&L ($)">
+              <input type="number" step="0.01" value={form.pnl}
+                onChange={e => set('pnl', e.target.value)}
                 className={inputClass} required />
             </Field>
           </div>
