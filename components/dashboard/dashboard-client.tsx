@@ -11,10 +11,10 @@ import { PnlChart } from './pnl-chart'
 
 export function DashboardClient({ trades }: { trades: Trade[] }) {
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-8">
       <div>
-        <h1 className="text-2xl font-semibold">Dashboard</h1>
-        <p className="text-sm text-gray-400 mt-1">Journal performance overview</p>
+        <h1 className="text-3xl font-semibold tracking-tight">Dashboard</h1>
+        <p className="text-sm text-gray-400 mt-1.5">Journal performance overview</p>
       </div>
 
       <StatCards
