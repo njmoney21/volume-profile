@@ -119,11 +119,19 @@ export interface BacktestTradeFormData {
   notes?: string
 }
 
+export type ConceptCategory = 'Setups' | 'Risk Management' | 'Psychology' | 'Market Structure' | 'General'
+
 export interface Concept {
   id: string
   title: string
-  category: string
+  category: ConceptCategory
   body: string
   created_at: string
   updated_at: string
+}
+
+export interface ConceptFormData {
+  title: string
+  category: ConceptCategory
+  body: string
 }
