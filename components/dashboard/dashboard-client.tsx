@@ -8,6 +8,7 @@ import {
 import { StatCards } from './stat-cards'
 import { BreakdownTable } from './breakdown-table'
 import { PnlChart } from './pnl-chart'
+import { TradingCalendar } from './trading-calendar'
 
 export function DashboardClient({ trades }: { trades: Trade[] }) {
   return (
@@ -35,6 +36,8 @@ export function DashboardClient({ trades }: { trades: Trade[] }) {
       </div>
 
       <BreakdownTable title="By Time of Day" rows={statsByTimeOfDay(trades)} />
+
+      <TradingCalendar trades={trades} />
     </div>
   )
 }
