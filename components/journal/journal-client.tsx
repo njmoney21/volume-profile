@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import { useSearchParams } from 'next/navigation'
 import type { Trade, TradeFilters } from '@/types'
 import { filterTrades, sumPnl, resultWinRate } from '@/lib/trades'
 import { formatPnl } from '@/lib/utils'
@@ -9,7 +10,9 @@ import { TradeTable } from './trade-table'
 import { TradeForm } from './trade-form'
 
 export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
-  const [filters, setFilters] = useState<TradeFilters>({})
+  const searchParams = useSearchParams()
+  const initialDate = searchParams.get('date') ?? undefined
+  const [filters, setFilters] = useState<TradeFilters>(initialDate ? { date: initialDate } : {})
   const [showForm, setShowForm] = useState(false)
 
   const filtered = filterTrades(initialTrades, filters)
