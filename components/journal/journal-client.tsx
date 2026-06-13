@@ -1,7 +1,7 @@
 'use client'
 
 import { useState } from 'react'
-import { useSearchParams } from 'next/navigation'
+import { useRouter, useSearchParams } from 'next/navigation'
 import type { Trade, TradeFilters } from '@/types'
 import { filterTrades, sumPnl, resultWinRate } from '@/lib/trades'
 import { formatPnl } from '@/lib/utils'
@@ -10,10 +10,39 @@ import { TradeTable } from './trade-table'
 import { TradeForm } from './trade-form'
 
 export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
+  const router = useRouter()
   const searchParams = useSearchParams()
   const initialDate = searchParams.get('date') ?? undefined
-  const [filters, setFilters] = useState<TradeFilters>(initialDate ? { date: initialDate } : {})
+  const initialStatus = searchParams.get('status') as TradeFilters['status'] | null
+  const [filters, setFilters] = useState<TradeFilters>({
+    ...(initialDate && { date: initialDate }),
+    ...(initialStatus && { status: initialStatus }),
+  })
   const [showForm, setShowForm] = useState(false)
+  const [importing, setImporting] = useState(false)
+  const [importMessage, setImportMessage] = useState<string | null>(null)
+
+  async function handleImport() {
+    setImporting(true)
+    setImportMessage(null)
+    try {
+      const res = await fetch('/api/import/tradovate', { method: 'POST' })
+      const data = await res.json()
+      if (!res.ok) {
+        setImportMessage(`Import failed: ${data.error ?? 'Unknown error'}`)
+      } else if (data.imported === 0) {
+        setImportMessage('No new trades to import.')
+      } else {
+        const openNote = data.stillOpen > 0 ? ` (${data.stillOpen} position still open)` : ''
+        setImportMessage(`Imported ${data.imported} trade${data.imported === 1 ? '' : 's'}${openNote}.`)
+        router.refresh()
+      }
+    } catch {
+      setImportMessage('Import failed: network error.')
+    } finally {
+      setImporting(false)
+    }
+  }
 
   const filtered = filterTrades(initialTrades, filters)
   const totalPnl = sumPnl(filtered)
@@ -31,13 +60,26 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
             </span>
           </p>
         </div>
-        <button
-          onClick={() => setShowForm(true)}
-          className="px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-medium transition-colors"
-        >
-          + Add Trade
-        </button>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={handleImport}
+            disabled={importing}
+            className="px-4 py-2 border border-white/20 hover:bg-white/5 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {importing ? 'Importing...' : 'Import from Tradovate'}
+          </button>
+          <button
+            onClick={() => setShowForm(true)}
+            className="px-4 py-2 bg-white hover:bg-gray-200 text-black rounded-lg text-sm font-medium transition-colors"
+          >
+            + Add Trade
+          </button>
+        </div>
       </div>
+
+      {importMessage && (
+        <p className="text-sm text-gray-400 mb-4">{importMessage}</p>
+      )}
 
       <div className="mb-5">
         <FiltersBar filters={filters} onChange={setFilters} />
