@@ -7,6 +7,7 @@ export function filterTrades(trades: Trade[], filters: TradeFilters): Trade[] {
     if (filters.scenario && trade.scenario !== filters.scenario) return false
     if (filters.result && trade.result !== filters.result) return false
     if (filters.date && trade.date !== filters.date) return false
+    if (filters.status && trade.status !== filters.status) return false
     return true
   })
 }
@@ -127,6 +128,14 @@ export function cumulativePnl(trades: Trade[]): PnlPoint[] {
 }
 
 export function prepareTradeData(formData: TradeFormData): Omit<Trade, 'id' | 'created_at'> {
+  const strategyFieldsComplete =
+    formData.level_type != null &&
+    formData.level_price != null &&
+    formData.prev_day_poc != null &&
+    formData.prev_day_vah != null &&
+    formData.prev_day_val != null &&
+    formData.scenario != null
+
   return {
     date: formData.date,
     time_entered: formData.time_entered,
@@ -142,6 +151,6 @@ export function prepareTradeData(formData: TradeFormData): Omit<Trade, 'id' | 'c
     pnl: formData.pnl,
     notes: formData.notes ?? null,
     source: formData.source ?? 'manual',
-    status: 'reviewed',
+    status: strategyFieldsComplete ? 'reviewed' : 'draft',
   }
 }

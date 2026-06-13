@@ -85,6 +85,15 @@ describe('filterTrades', () => {
     expect(result).toHaveLength(1)
     expect(result[0].id).toBe('1')
   })
+
+  it('filters by status', () => {
+    const withStatus = [
+      makeTrade({ id: '1', status: 'draft' }),
+      makeTrade({ id: '2', status: 'reviewed' }),
+    ]
+    expect(filterTrades(withStatus, { status: 'draft' })).toHaveLength(1)
+    expect(filterTrades(withStatus, { status: 'draft' })[0].id).toBe('1')
+  })
 })
 
 describe('sumPnl', () => {
@@ -354,5 +363,43 @@ describe('prepareTradeData', () => {
     expect(result.result).toBe('win')
     expect(result.source).toBe('manual')
     expect(result.notes).toBeNull()
+  })
+
+  it('marks a trade with all strategy fields filled as reviewed', () => {
+    const result = prepareTradeData({
+      date: '2026-06-09',
+      time_entered: '10:00',
+      direction: 'long',
+      position_size: 1500,
+      level_type: 'POC',
+      level_price: 21000,
+      prev_day_poc: 21000,
+      prev_day_vah: 21050,
+      prev_day_val: 20950,
+      scenario: 'retest_continue',
+      result: 'win',
+      pnl: 200,
+    })
+    expect(result.status).toBe('reviewed')
+  })
+
+  it('marks a trade missing strategy fields as draft and preserves auto source', () => {
+    const result = prepareTradeData({
+      date: '2026-06-12',
+      time_entered: '14:00:00',
+      direction: 'long',
+      position_size: 1,
+      level_type: null,
+      level_price: null,
+      prev_day_poc: null,
+      prev_day_vah: null,
+      prev_day_val: null,
+      scenario: null,
+      result: 'win',
+      pnl: 200,
+      source: 'auto',
+    })
+    expect(result.status).toBe('draft')
+    expect(result.source).toBe('auto')
   })
 })
