@@ -8,6 +8,9 @@ import { formatPnl } from '@/lib/utils'
 import { FiltersBar } from './filters-bar'
 import { TradeTable } from './trade-table'
 import { TradeForm } from './trade-form'
+import { Pagination } from './pagination'
+
+const PAGE_SIZE = 10
 
 export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
   const router = useRouter()
@@ -21,7 +24,13 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
   const [showForm, setShowForm] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importMessage, setImportMessage] = useState<string | null>(null)
+  const [page, setPage] = useState(1)
   const csvInputRef = useRef<HTMLInputElement>(null)
+
+  function handleFiltersChange(next: TradeFilters) {
+    setFilters(next)
+    setPage(1)
+  }
 
   function applyImportResult(res: Response, data: { imported?: number; stillOpen?: number; skippedSymbols?: string[]; error?: string }) {
     if (!res.ok) {
@@ -77,6 +86,9 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
   const filtered = filterTrades(initialTrades, filters)
   const totalPnl = sumPnl(filtered)
   const wr = resultWinRate(filtered)
+  const totalPages = Math.max(1, Math.ceil(filtered.length / PAGE_SIZE))
+  const currentPage = Math.min(page, totalPages)
+  const pageTrades = filtered.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE)
 
   return (
     <div>
@@ -126,10 +138,11 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
       )}
 
       <div className="mb-5">
-        <FiltersBar filters={filters} onChange={setFilters} />
+        <FiltersBar filters={filters} onChange={handleFiltersChange} />
       </div>
 
-      <TradeTable trades={filtered} />
+      <TradeTable trades={pageTrades} />
+      <Pagination page={currentPage} totalPages={totalPages} onChange={setPage} />
 
       {showForm && <TradeForm onClose={() => setShowForm(false)} />}
     </div>
