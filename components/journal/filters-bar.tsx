@@ -47,6 +47,12 @@ export function FiltersBar({ filters, onChange }: FiltersBarProps) {
         <option value="loss">Loss</option>
         <option value="breakeven">Breakeven</option>
       </select>
+      <select value={filters.status ?? ''}
+        onChange={e => set('status', e.target.value)} className={selectClass}>
+        <option value="">All Statuses</option>
+        <option value="draft">Draft</option>
+        <option value="reviewed">Reviewed</option>
+      </select>
       {hasFilters && (
         <button onClick={() => onChange({})}
           className="text-xs text-gray-400 hover:text-white transition-colors">
