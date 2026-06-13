@@ -3,6 +3,7 @@ export type LevelType = 'POC' | 'VAH' | 'VAL'
 export type Scenario = 'retest_continue' | 'break_retest_reverse'
 export type TradeSource = 'auto' | 'manual'
 export type TradeResult = 'win' | 'loss' | 'breakeven'
+export type TradeStatus = 'draft' | 'reviewed'
 
 export interface Trade {
   id: string
@@ -10,16 +11,17 @@ export interface Trade {
   time_entered: string   // "HH:MM:SS"
   direction: Direction
   position_size: number
-  level_type: LevelType
-  level_price: number
-  prev_day_poc: number
-  prev_day_vah: number
-  prev_day_val: number
-  scenario: Scenario
+  level_type: LevelType | null
+  level_price: number | null
+  prev_day_poc: number | null
+  prev_day_vah: number | null
+  prev_day_val: number | null
+  scenario: Scenario | null
   result: TradeResult
   pnl: number
   notes: string | null
   source: TradeSource
+  status: TradeStatus
   created_at: string
 }
 
@@ -28,15 +30,16 @@ export interface TradeFormData {
   time_entered: string
   direction: Direction
   position_size: number
-  level_type: LevelType
-  level_price: number
-  prev_day_poc: number
-  prev_day_vah: number
-  prev_day_val: number
-  scenario: Scenario
+  level_type?: LevelType | null
+  level_price?: number | null
+  prev_day_poc?: number | null
+  prev_day_vah?: number | null
+  prev_day_val?: number | null
+  scenario?: Scenario | null
   result: TradeResult
   pnl: number
   notes?: string
+  source?: TradeSource
 }
 
 export interface TradeFilters {
@@ -45,6 +48,7 @@ export interface TradeFilters {
   level_type?: LevelType
   scenario?: Scenario
   result?: TradeResult
+  status?: TradeStatus
 }
 
 export interface BacktestSession {

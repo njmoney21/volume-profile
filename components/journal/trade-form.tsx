@@ -145,17 +145,17 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
             <p className="text-xs text-gray-500 mb-3">Previous Day Levels</p>
             <div className="grid grid-cols-3 gap-3">
               <Field label="POC (Red)">
-                <input type="number" step="0.25" value={form.prev_day_poc}
+                <input type="number" step="0.25" value={form.prev_day_poc ?? ''}
                   onChange={e => set('prev_day_poc', e.target.value)}
                   className={inputClass} required />
               </Field>
               <Field label="VAH (Purple)">
-                <input type="number" step="0.25" value={form.prev_day_vah}
+                <input type="number" step="0.25" value={form.prev_day_vah ?? ''}
                   onChange={e => set('prev_day_vah', e.target.value)}
                   className={inputClass} required />
               </Field>
               <Field label="VAL (Purple)">
-                <input type="number" step="0.25" value={form.prev_day_val}
+                <input type="number" step="0.25" value={form.prev_day_val ?? ''}
                   onChange={e => set('prev_day_val', e.target.value)}
                   className={inputClass} required />
               </Field>
@@ -164,7 +164,7 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
 
           <div className="grid grid-cols-2 gap-4">
             <Field label="Level Traded">
-              <select value={form.level_type}
+              <select value={form.level_type ?? ''}
                 onChange={e => set('level_type', e.target.value as LevelType)}
                 className={inputClass}>
                 <option value="POC">POC (Red)</option>
@@ -173,14 +173,14 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
               </select>
             </Field>
             <Field label="Level Price">
-              <input type="number" step="0.25" value={form.level_price}
+              <input type="number" step="0.25" value={form.level_price ?? ''}
                 onChange={e => set('level_price', e.target.value)}
                 className={inputClass} required />
             </Field>
           </div>
 
           <Field label="Scenario">
-            <select value={form.scenario}
+            <select value={form.scenario ?? ''}
               onChange={e => set('scenario', e.target.value as Scenario)}
               className={inputClass}>
               <option value="retest_continue">Retest + Continue</option>

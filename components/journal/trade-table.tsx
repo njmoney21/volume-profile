@@ -85,7 +85,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                     {trade.level_type}
                   </span>
                 </td>
-                <td className="py-3 pr-4 text-gray-400 text-xs">{scenarioLabel[trade.scenario]}</td>
+                <td className="py-3 pr-4 text-gray-400 text-xs">{trade.scenario ? scenarioLabel[trade.scenario] : '—'}</td>
                 <td className="py-3 pr-4 font-mono text-gray-400">${trade.position_size.toFixed(2)}</td>
                 <td className={`py-3 pr-4 font-mono font-medium ${resultPnlClass[trade.result]}`}>
                   {formatPnl(trade.pnl)}

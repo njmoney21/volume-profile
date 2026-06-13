@@ -35,6 +35,7 @@ const makeTrade = (overrides: Partial<Trade> = {}): Trade => ({
   pnl: 200,
   notes: null,
   source: 'manual',
+  status: 'reviewed',
   created_at: '2026-06-09T10:00:00Z',
   ...overrides,
 })
