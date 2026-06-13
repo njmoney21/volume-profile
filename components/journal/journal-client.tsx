@@ -1,6 +1,6 @@
 'use client'
 
-import { useState } from 'react'
+import { useRef, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import type { Trade, TradeFilters } from '@/types'
 import { filterTrades, sumPnl, resultWinRate } from '@/lib/trades'
@@ -21,6 +21,24 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
   const [showForm, setShowForm] = useState(false)
   const [importing, setImporting] = useState(false)
   const [importMessage, setImportMessage] = useState<string | null>(null)
+  const csvInputRef = useRef<HTMLInputElement>(null)
+
+  function applyImportResult(res: Response, data: { imported?: number; stillOpen?: number; skippedSymbols?: string[]; error?: string }) {
+    if (!res.ok) {
+      setImportMessage(`Import failed: ${data.error ?? 'Unknown error'}`)
+      return
+    }
+    if (!data.imported) {
+      setImportMessage('No new trades to import.')
+      return
+    }
+    const openNote = data.stillOpen ? ` (${data.stillOpen} position still open)` : ''
+    const skippedNote = data.skippedSymbols?.length
+      ? ` Skipped unsupported contracts: ${data.skippedSymbols.join(', ')}.`
+      : ''
+    setImportMessage(`Imported ${data.imported} trade${data.imported === 1 ? '' : 's'}${openNote}.${skippedNote}`)
+    router.refresh()
+  }
 
   async function handleImport() {
     setImporting(true)
@@ -28,15 +46,27 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
     try {
       const res = await fetch('/api/import/tradovate', { method: 'POST' })
       const data = await res.json()
-      if (!res.ok) {
-        setImportMessage(`Import failed: ${data.error ?? 'Unknown error'}`)
-      } else if (data.imported === 0) {
-        setImportMessage('No new trades to import.')
-      } else {
-        const openNote = data.stillOpen > 0 ? ` (${data.stillOpen} position still open)` : ''
-        setImportMessage(`Imported ${data.imported} trade${data.imported === 1 ? '' : 's'}${openNote}.`)
-        router.refresh()
-      }
+      applyImportResult(res, data)
+    } catch {
+      setImportMessage('Import failed: network error.')
+    } finally {
+      setImporting(false)
+    }
+  }
+
+  async function handleCsvSelected(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    e.target.value = ''
+    if (!file) return
+
+    setImporting(true)
+    setImportMessage(null)
+    try {
+      const formData = new FormData()
+      formData.append('file', file)
+      const res = await fetch('/api/import/tradovate-csv', { method: 'POST', body: formData })
+      const data = await res.json()
+      applyImportResult(res, data)
     } catch {
       setImportMessage('Import failed: network error.')
     } finally {
@@ -67,6 +97,20 @@ export function JournalClient({ initialTrades }: { initialTrades: Trade[] }) {
             className="px-4 py-2 border border-white/20 hover:bg-white/5 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
           >
             {importing ? 'Importing...' : 'Import from Tradovate'}
+          </button>
+          <input
+            ref={csvInputRef}
+            type="file"
+            accept=".csv"
+            className="hidden"
+            onChange={handleCsvSelected}
+          />
+          <button
+            onClick={() => csvInputRef.current?.click()}
+            disabled={importing}
+            className="px-4 py-2 border border-white/20 hover:bg-white/5 text-white rounded-lg text-sm font-medium transition-colors disabled:opacity-50"
+          >
+            {importing ? 'Importing...' : 'Import Fills CSV'}
           </button>
           <button
             onClick={() => setShowForm(true)}
