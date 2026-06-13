@@ -1,0 +1,5 @@
+{
+  "crons": [
+    { "path": "/api/import/tradovate", "schedule": "0 22 * * 1-5" }
+  ]
+}
