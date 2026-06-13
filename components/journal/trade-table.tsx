@@ -51,7 +51,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
         <table className="w-full text-sm">
           <thead>
             <tr className="border-b border-white/10 text-gray-400 text-left">
-              {['Date', 'Time', 'Direction', 'Result', 'Level', 'Scenario', 'Size', 'P&L', ''].map(h => (
+              {['Date', 'Time', 'Direction', 'Result', 'Status', 'Level', 'Scenario', 'Size', 'P&L', ''].map(h => (
                 <th key={h} className="pb-3 pr-4 font-medium">{h}</th>
               ))}
             </tr>
@@ -59,7 +59,9 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
           <tbody>
             {trades.map(trade => (
               <tr key={trade.id}
-                className="border-b border-white/5 hover:bg-white/5 transition-colors">
+                className={`border-b border-white/5 hover:bg-white/5 transition-colors ${
+                  trade.status === 'draft' ? 'bg-amber-500/5' : ''
+                }`}>
                 <td className="py-3 pr-4">{formatDate(trade.date)}</td>
                 <td className="py-3 pr-4 text-gray-400">{formatTime(trade.time_entered)}</td>
                 <td className="py-3 pr-4">
@@ -77,13 +79,24 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                   </span>
                 </td>
                 <td className="py-3 pr-4">
-                  <span className={`px-2 py-0.5 rounded text-xs font-medium ${
-                    trade.level_type === 'POC'
-                      ? 'bg-white text-black'
-                      : 'border border-white/20 text-gray-300'
-                  }`}>
-                    {trade.level_type}
-                  </span>
+                  {trade.status === 'draft' && (
+                    <span className="px-2 py-0.5 rounded text-xs font-medium bg-amber-500/20 text-amber-400">
+                      Draft
+                    </span>
+                  )}
+                </td>
+                <td className="py-3 pr-4">
+                  {trade.level_type ? (
+                    <span className={`px-2 py-0.5 rounded text-xs font-medium ${
+                      trade.level_type === 'POC'
+                        ? 'bg-white text-black'
+                        : 'border border-white/20 text-gray-300'
+                    }`}>
+                      {trade.level_type}
+                    </span>
+                  ) : (
+                    <span className="text-gray-500 text-xs">—</span>
+                  )}
                 </td>
                 <td className="py-3 pr-4 text-gray-400 text-xs">{trade.scenario ? scenarioLabel[trade.scenario] : '—'}</td>
                 <td className="py-3 pr-4 font-mono text-gray-400">${trade.position_size.toFixed(2)}</td>
