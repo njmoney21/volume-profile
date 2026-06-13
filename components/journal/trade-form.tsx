@@ -54,13 +54,14 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
           result: trade.result,
           pnl: trade.pnl,
           notes: trade.notes ?? '',
+          source: trade.source,
         }
       : defaultForm
   )
   const [error, setError] = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  function set(key: keyof TradeFormData, value: string | number) {
+  function set(key: keyof TradeFormData, value: string | number | null) {
     setForm(prev => ({ ...prev, [key]: value }))
   }
 
@@ -73,10 +74,10 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
       ...form,
       position_size: Number(form.position_size),
       pnl: Number(form.pnl),
-      level_price: Number(form.level_price),
-      prev_day_poc: Number(form.prev_day_poc),
-      prev_day_vah: Number(form.prev_day_vah),
-      prev_day_val: Number(form.prev_day_val),
+      level_price: form.level_price == null ? null : Number(form.level_price),
+      prev_day_poc: form.prev_day_poc == null ? null : Number(form.prev_day_poc),
+      prev_day_vah: form.prev_day_vah == null ? null : Number(form.prev_day_vah),
+      prev_day_val: form.prev_day_val == null ? null : Number(form.prev_day_val),
     }
 
     const result = trade ? await updateTrade(trade.id, data) : await createTrade(data)
@@ -92,7 +93,14 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
   return (
     <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
       <div className="bg-black border border-white/10 rounded-xl p-6 w-full max-w-lg max-h-[90vh] overflow-y-auto">
-        <h2 className="text-lg font-semibold mb-5">{trade ? 'Edit Trade' : 'Add Trade'}</h2>
+        <div className="mb-5">
+          <h2 className="text-lg font-semibold">{trade ? 'Edit Trade' : 'Add Trade'}</h2>
+          {trade?.status === 'draft' && (
+            <p className="text-xs text-amber-400 mt-1">
+              Imported from Tradovate — fill in the strategy fields below to mark this trade as reviewed.
+            </p>
+          )}
+        </div>
         <form onSubmit={handleSubmit} className="flex flex-col gap-4">
 
           <div className="grid grid-cols-2 gap-4">
@@ -146,18 +154,18 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
             <div className="grid grid-cols-3 gap-3">
               <Field label="POC (Red)">
                 <input type="number" step="0.25" value={form.prev_day_poc ?? ''}
-                  onChange={e => set('prev_day_poc', e.target.value)}
-                  className={inputClass} required />
+                  onChange={e => set('prev_day_poc', e.target.value === '' ? null : e.target.value)}
+                  className={inputClass} />
               </Field>
               <Field label="VAH (Purple)">
                 <input type="number" step="0.25" value={form.prev_day_vah ?? ''}
-                  onChange={e => set('prev_day_vah', e.target.value)}
-                  className={inputClass} required />
+                  onChange={e => set('prev_day_vah', e.target.value === '' ? null : e.target.value)}
+                  className={inputClass} />
               </Field>
               <Field label="VAL (Purple)">
                 <input type="number" step="0.25" value={form.prev_day_val ?? ''}
-                  onChange={e => set('prev_day_val', e.target.value)}
-                  className={inputClass} required />
+                  onChange={e => set('prev_day_val', e.target.value === '' ? null : e.target.value)}
+                  className={inputClass} />
               </Field>
             </div>
           </div>
@@ -165,8 +173,9 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <Field label="Level Traded">
               <select value={form.level_type ?? ''}
-                onChange={e => set('level_type', e.target.value as LevelType)}
+                onChange={e => set('level_type', e.target.value === '' ? null : e.target.value as LevelType)}
                 className={inputClass}>
+                <option value="">— Select —</option>
                 <option value="POC">POC (Red)</option>
                 <option value="VAH">VAH (Purple)</option>
                 <option value="VAL">VAL (Purple)</option>
@@ -174,15 +183,16 @@ export function TradeForm({ trade, onClose }: TradeFormProps) {
             </Field>
             <Field label="Level Price">
               <input type="number" step="0.25" value={form.level_price ?? ''}
-                onChange={e => set('level_price', e.target.value)}
-                className={inputClass} required />
+                onChange={e => set('level_price', e.target.value === '' ? null : e.target.value)}
+                className={inputClass} />
             </Field>
           </div>
 
           <Field label="Scenario">
             <select value={form.scenario ?? ''}
-              onChange={e => set('scenario', e.target.value as Scenario)}
+              onChange={e => set('scenario', e.target.value === '' ? null : e.target.value as Scenario)}
               className={inputClass}>
+              <option value="">— Select —</option>
               <option value="retest_continue">Retest + Continue</option>
               <option value="break_retest_reverse">Break + Retest + Reverse</option>
             </select>
