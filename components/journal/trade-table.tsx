@@ -1,15 +1,10 @@
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { Trade } from '@/types'
 import { formatPnl, formatTime, formatDate } from '@/lib/utils'
 import { deleteTrade } from '@/app/journal/actions'
 import { TradeForm } from './trade-form'
-
-const scenarioLabel: Record<string, string> = {
-  retest_continue: 'Retest + Continue',
-  break_retest_reverse: 'Break + Reverse',
-}
 
 const resultLabel: Record<string, string> = {
   win: 'W',
@@ -31,10 +26,26 @@ const resultPnlClass: Record<string, string> = {
 
 export function TradeTable({ trades }: { trades: Trade[] }) {
   const [editing, setEditing] = useState<Trade | null>(null)
+  const [openMenuId, setOpenMenuId] = useState<string | null>(null)
+  const menuRefs = useRef(new Map<string, HTMLDivElement>())
+
+  useEffect(() => {
+    if (!openMenuId) return
+    const id = openMenuId
+    function handleClickOutside(e: MouseEvent) {
+      const menu = menuRefs.current.get(id)
+      if (menu && !menu.contains(e.target as Node)) {
+        setOpenMenuId(null)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => document.removeEventListener('mousedown', handleClickOutside)
+  }, [openMenuId])
 
   async function handleDelete(id: string) {
     if (!confirm('Delete this trade?')) return
     await deleteTrade(id)
+    setOpenMenuId(null)
   }
 
   if (trades.length === 0) {
@@ -52,7 +63,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
           <table className="w-full text-sm">
             <thead>
               <tr className="text-left bg-white/[0.03]">
-                {['Date', 'Time', 'Direction', 'Result', 'Status', 'Level', 'Scenario', 'Size', 'P&L', ''].map(h => (
+                {['Date', 'Time', 'Direction', 'Result', 'Status', 'Size', 'P&L', ''].map(h => (
                   <th key={h} className="py-3 px-4 font-medium text-gray-400 text-xs uppercase tracking-wider whitespace-nowrap">{h}</th>
                 ))}
               </tr>
@@ -60,7 +71,7 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
             <tbody className="divide-y divide-white/5">
               {trades.map(trade => (
                 <tr key={trade.id}
-                  className={`group hover:bg-white/[0.04] transition-colors ${
+                  className={`hover:bg-white/[0.04] transition-colors ${
                     trade.status === 'draft' ? 'bg-amber-500/[0.04]' : ''
                   }`}>
                   <td className="py-3.5 px-4 font-medium whitespace-nowrap">{formatDate(trade.date)}</td>
@@ -90,30 +101,35 @@ export function TradeTable({ trades }: { trades: Trade[] }) {
                       </span>
                     )}
                   </td>
-                  <td className="py-3.5 px-4">
-                    {trade.level_type ? (
-                      <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${
-                        trade.level_type === 'POC'
-                          ? 'bg-white text-black'
-                          : 'border border-white/20 text-gray-300'
-                      }`}>
-                        {trade.level_type}
-                      </span>
-                    ) : (
-                      <span className="text-gray-500 text-xs">—</span>
-                    )}
-                  </td>
-                  <td className="py-3.5 px-4 text-gray-400 text-xs whitespace-nowrap">{trade.scenario ? scenarioLabel[trade.scenario] : '—'}</td>
                   <td className="py-3.5 px-4 font-mono text-gray-400 tabular-nums">${trade.position_size.toFixed(2)}</td>
                   <td className={`py-3.5 px-4 font-mono font-semibold tabular-nums ${resultPnlClass[trade.result]}`}>
                     {formatPnl(trade.pnl)}
                   </td>
-                  <td className="py-3.5 px-4">
-                    <div className="flex gap-3 opacity-0 group-hover:opacity-100 transition-opacity">
-                      <button onClick={() => setEditing(trade)}
-                        className="text-xs text-gray-400 hover:text-white transition-colors">Edit</button>
-                      <button onClick={() => handleDelete(trade.id)}
-                        className="text-xs text-gray-400 hover:text-red-400 transition-colors">Delete</button>
+                  <td className="py-3.5 px-4 relative">
+                    <div ref={el => { if (el) menuRefs.current.set(trade.id, el); else menuRefs.current.delete(trade.id) }}>
+                      <button
+                        onClick={() => setOpenMenuId(openMenuId === trade.id ? null : trade.id)}
+                        className="w-8 h-8 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
+                        aria-label="Row actions"
+                      >
+                        ⋮
+                      </button>
+                      {openMenuId === trade.id && (
+                        <div className="absolute right-4 top-full z-10 mt-1 w-32 rounded-lg border border-white/10 bg-[#111] shadow-lg overflow-hidden">
+                          <button
+                            onClick={() => { setEditing(trade); setOpenMenuId(null) }}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/10 hover:text-white transition-colors"
+                          >
+                            Edit
+                          </button>
+                          <button
+                            onClick={() => handleDelete(trade.id)}
+                            className="w-full text-left px-3 py-2 text-xs text-gray-300 hover:bg-white/10 hover:text-red-400 transition-colors"
+                          >
+                            Delete
+                          </button>
+                        </div>
+                      )}
                     </div>
                   </td>
                 </tr>
