@@ -108,9 +108,29 @@ const TIME_BUCKETS = [
   { label: '13:30+', start: '13:30:00', end: '24:00:00' },
 ]
 
-export function statsByTimeOfDay(trades: Trade[]): BreakdownRow[] {
+function convertTimeToZone(date: string, time: string, timeZone: string): string {
+  if (timeZone === 'UTC') return time
+
+  const utcDate = new Date(`${date}T${time}Z`)
+  const parts = new Intl.DateTimeFormat('en-GB', {
+    timeZone,
+    hour: '2-digit',
+    minute: '2-digit',
+    second: '2-digit',
+    hour12: false,
+  }).formatToParts(utcDate)
+
+  const get = (type: string) => parts.find(p => p.type === type)?.value ?? '00'
+  const hour = get('hour') === '24' ? '00' : get('hour')
+  return `${hour}:${get('minute')}:${get('second')}`
+}
+
+export function statsByTimeOfDay(trades: Trade[], timeZone: string = 'UTC'): BreakdownRow[] {
   return TIME_BUCKETS.map(({ label, start, end }) =>
-    rowFor(label, trades.filter(t => t.time_entered >= start && t.time_entered < end))
+    rowFor(label, trades.filter(t => {
+      const time = convertTimeToZone(t.date, t.time_entered, timeZone)
+      return time >= start && time < end
+    }))
   )
 }
 

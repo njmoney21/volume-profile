@@ -1,10 +1,13 @@
 import type { BreakdownRow } from '@/types'
 import { formatPnl } from '@/lib/utils'
 
-export function BreakdownTable({ title, rows }: { title: string; rows: BreakdownRow[] }) {
+export function BreakdownTable({ title, rows, headerRight }: { title: string; rows: BreakdownRow[]; headerRight?: React.ReactNode }) {
   return (
     <div className="bg-gradient-to-b from-white/[0.04] to-transparent border border-white/10 rounded-2xl p-5 shadow-[0_1px_0_0_rgba(255,255,255,0.04)_inset]">
-      <h2 className="text-sm font-medium text-gray-300 mb-4">{title}</h2>
+      <div className="flex items-center justify-between mb-4">
+        <h2 className="text-sm font-medium text-gray-300">{title}</h2>
+        {headerRight}
+      </div>
       <table className="w-full text-sm">
         <thead>
           <tr className="text-gray-500 text-left text-xs">
